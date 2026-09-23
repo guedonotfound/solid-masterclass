@@ -20,6 +20,12 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { CreateUser } from "./application/CreateUser.js";
+import {
+  EmailAlreadyInUseError,
+  FailedToCreateUserError,
+  PasswordDoesNotMatchError,
+} from "./application/errors/index.js";
 
 // --- db ---
 export const usersTable = pgTable("users", {
@@ -97,41 +103,27 @@ export async function buildApp(db = createDb()) {
     async (request, reply) => {
       const { name, email, age, password, passwordConfirmation } = request.body;
 
-      if (password !== passwordConfirmation) {
-        return reply.status(400).send({ error: "Passwords do not match" });
-      }
+      const createUser = new CreateUser();
 
       try {
-        const [existing] = await db
-          .select()
-          .from(usersTable)
-          .where(eq(usersTable.email, email));
-        if (existing) {
+        const output = await createUser.execute({
+          name,
+          email,
+          age,
+          password,
+          passwordConfirmation,
+        });
+        return reply.status(201).send(output);
+      } catch (error) {
+        if (error instanceof PasswordDoesNotMatchError) {
+          return reply.status(400).send({ error: "Passwords do not match" });
+        }
+        if (error instanceof EmailAlreadyInUseError) {
           return reply.status(409).send({ error: "E-mail já cadastrado" });
         }
-
-        const [user] = await db
-          .insert(usersTable)
-          .values({
-            name,
-            email,
-            age,
-            password: await bcrypt.hash(password, 10),
-          })
-          .returning();
-        if (!user) {
+        if (error instanceof FailedToCreateUserError) {
           return reply.status(500).send({ error: "Erro ao criar usuário" });
         }
-
-        return reply.status(201).send({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          age: user.age,
-        });
-      } catch (error) {
-        request.log.error(error);
-        return reply.status(500).send({ error: "Erro ao criar usuário" });
       }
     },
   );
