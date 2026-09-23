@@ -4,6 +4,8 @@ import {
   FailedToCreateUserError,
   PasswordDoesNotMatchError,
 } from "./errors/index.js";
+import type { User } from "./entities/user.js";
+import type { UserRepository } from "../resources/UserRepository.js";
 
 interface InputDto {
   name: string;
@@ -20,22 +22,8 @@ interface OutputDto {
   age: number;
 }
 
-export interface UserDAO {
-  create(dto: {
-    id: string;
-    name: string;
-    age: number;
-    email: string;
-    password: string;
-  }): Promise<any>;
-  findByEmail(email: string): Promise<any>;
-}
-
 export class CreateUser {
-  private userDAO: UserDAO;
-  constructor(userDAO: UserDAO) {
-    this.userDAO = userDAO;
-  }
+  constructor(private userRepository: UserRepository) {}
   async execute(input: InputDto): Promise<OutputDto> {
     const { name, age, email, password, passwordConfirmation } = input;
 
@@ -43,11 +31,11 @@ export class CreateUser {
       throw new PasswordDoesNotMatchError();
     }
 
-    const existingUser = await this.userDAO.findByEmail(email);
+    const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
       throw new EmailAlreadyInUseError();
     }
-    const user = await this.userDAO.create({
+    const user = await this.userRepository.create({
       id: crypto.randomUUID(),
       name,
       age,

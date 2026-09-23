@@ -1,9 +1,19 @@
 import { eq } from "drizzle-orm";
 import { usersTable } from "../api.js";
 import { db } from "../db/client.js";
-import type { UserDAO } from "../application/CreateUser.js";
 
 // Data Access Object
+
+export interface UserDAO {
+  create(dto: {
+    id: string;
+    name: string;
+    age: number;
+    email: string;
+    password: string;
+  }): Promise<any>;
+  findByEmail(email: string): Promise<any>;
+}
 export class DrizzleUserDAO implements UserDAO {
   async create(dto: {
     id: string;
