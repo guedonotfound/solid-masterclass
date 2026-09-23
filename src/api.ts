@@ -24,6 +24,7 @@ import {
   FailedToCreateUserError,
   PasswordDoesNotMatchError,
 } from "./application/errors/index.js";
+import { DrizzleUserDAO } from "./resources/UserDAO.js";
 
 // --- db ---
 export const usersTable = pgTable("users", {
@@ -101,7 +102,7 @@ export async function buildApp(db = createDb()) {
     async (request, reply) => {
       const { name, email, age, password, passwordConfirmation } = request.body;
 
-      const createUser = new CreateUser();
+      const createUser = new CreateUser(new DrizzleUserDAO());
 
       try {
         const output = await createUser.execute({
