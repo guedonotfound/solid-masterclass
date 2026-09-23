@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "dev": "tsx watch src/api.ts"
   },
   "keywords": [],
@@ -24,11 +24,13 @@
     "fastify": "5.12.5",
     "fastify-type-provider-zod": "7.0.0",
     "pg": "^8.21.0",
-    "supertest": "7.3.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@types/supertest": "^7.2.1",
     "drizzle-kit": "^0.31.11",
-    "tsx": "^4.23.15"
+    "supertest": "^7.3.0",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.1"
   }
 }

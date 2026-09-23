@@ -1,12 +1,10 @@
 import bcrypt from "bcryptjs";
-import { usersTable } from "../api.js";
-import { db } from "../db/client.js";
-import { eq } from "drizzle-orm";
 import {
   EmailAlreadyInUseError,
   FailedToCreateUserError,
   PasswordDoesNotMatchError,
 } from "./errors/index.js";
+import { UserDAO } from "../resources/UserDAO.js";
 
 interface InputDto {
   name: string;
@@ -31,23 +29,18 @@ export class CreateUser {
       throw new PasswordDoesNotMatchError();
     }
 
-    const [existing] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email));
-    if (existing) {
+    const userDAO = new UserDAO();
+    const existingUser = await userDAO.findByEmail(email);
+    if (existingUser) {
       throw new EmailAlreadyInUseError();
     }
-    const [user] = await db
-      .insert(usersTable)
-      .values({
-        name,
-        age,
-        email,
-        password: await bcrypt.hash(password, 10),
-      })
-      .returning();
-
+    const user = await userDAO.create({
+      id: crypto.randomUUID(),
+      name,
+      age,
+      email,
+      password: await bcrypt.hash(password, 10),
+    });
     if (!user) {
       throw new FailedToCreateUserError();
     }

@@ -10,9 +10,7 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq } from "drizzle-orm";
 import {
   integer,
   pgTable,
