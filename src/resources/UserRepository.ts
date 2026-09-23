@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { usersTable } from "../api.js";
 import { db } from "../db/client.js";
-import type { User } from "../application/entities/user.js";
+import type { User } from "../application/entities/User.js";
 
 export interface UserRepository {
   create(input: User): Promise<User | null>;

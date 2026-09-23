@@ -33,6 +33,7 @@ export const usersTable = pgTable("users", {
   age: integer().notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 255 }).notNull(),
+  allowedMarketingChannel: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp()
     .notNull()
@@ -82,9 +83,7 @@ export async function buildApp(db = createDb()) {
           age: z.number(),
           password: z.string().min(8),
           passwordConfirmation: z.string().min(8),
-          allowedMarketingChannels: z
-            .array(z.enum(["email", "sms", "whatsapp"]))
-            .optional(),
+          allowedMarketingChannel: z.string(),
         }),
         response: {
           201: z.object({
@@ -100,7 +99,14 @@ export async function buildApp(db = createDb()) {
       },
     },
     async (request, reply) => {
-      const { name, email, age, password, passwordConfirmation } = request.body;
+      const {
+        name,
+        email,
+        age,
+        password,
+        passwordConfirmation,
+        allowedMarketingChannel,
+      } = request.body;
 
       const createUser = new CreateUser(new DrizzleUserRepository());
 
@@ -111,6 +117,7 @@ export async function buildApp(db = createDb()) {
           age,
           password,
           passwordConfirmation,
+          allowedMarketingChannel,
         });
         return reply.status(201).send(output);
       } catch (error) {
